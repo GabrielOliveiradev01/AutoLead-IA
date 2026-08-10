@@ -148,6 +148,18 @@
   .who .name{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .icons{display:flex;gap:16px;align-items:center;}
   .icons svg{width:21px;height:21px;fill:none;stroke:#fff;stroke-width:1.6;}
+  .icons button{background:none;border:0;padding:0;cursor:pointer;line-height:1;}
+  .exportWrap{position:relative;}
+  .exportMenu{
+    position:absolute;top:28px;right:0;background:#233138;border:1px solid rgba(255,255,255,.15);
+    border-radius:8px;padding:6px;display:none;flex-direction:column;gap:2px;z-index:15;
+    min-width:190px;box-shadow:0 4px 14px rgba(0,0,0,.4);
+  }
+  .exportMenu.show{display:flex;}
+  .exportMenu button{background:none;border:0;color:#e9edef;text-align:left;padding:9px 10px;font-size:13px;border-radius:6px;cursor:pointer;}
+  .exportMenu button:active{background:rgba(255,255,255,.1);}
+  .homeHeader .icons{gap:10px;}
+  .homeHeader button.textbtn{background:none;border:0;color:#00a884;font-size:22px;cursor:pointer;}
 
   .scroll{flex:1;overflow-y:auto;position:relative;}
   #messagesContainer{padding:10px 8px 14px;}
@@ -213,7 +225,11 @@
       <div id="screenHome" class="screen active">
         <div class="homeHeader">
           <h1>Conversas</h1>
-          <button id="openNewChat">✎</button>
+          <div class="icons">
+            <button class="textbtn" id="importBackupBtn" title="Importar backup (.json)">⇪</button>
+            <button class="textbtn" id="openNewChat" title="Nova conversa">✎</button>
+          </div>
+          <input id="importBackupInput" type="file" accept=".json,application/json" style="display:none">
         </div>
         <div class="chatlist" id="chatList"></div>
         <button class="fab-new" id="fabNew">＋</button>
@@ -267,6 +283,13 @@
           <div class="avatar" id="chatAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg></div>
           <div class="who"><div class="name" id="chatName">Contato</div></div>
           <div class="icons">
+            <div class="exportWrap">
+              <button id="exportBtn" title="Exportar conversa"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14"/></svg></button>
+              <div class="exportMenu" id="exportMenu">
+                <button id="exportTxtBtn">Baixar .txt (estilo WhatsApp)</button>
+                <button id="exportJsonBtn">Baixar backup completo (.json)</button>
+              </div>
+            </div>
             <svg viewBox="0 0 24 24"><path d="M3 6h11v12H3zM14 10l6-3.5v11L14 14"/></svg>
             <svg viewBox="0 0 24 24"><path d="M4 4c0 9 7 16 16 16l3-4-6-2-2 2c-2-1-4-3-5-5l2-2-2-6z"/></svg>
           </div>
@@ -404,8 +427,80 @@
    'mediaField','fMedia','fMediaName','whoField','whoRow','startChatBtn',
    'backBtn','chatAvatar','chatName','messagesContainer','scrollArea',
    'wallpaperBtn','wallpaperReset','wallpaperInput','msgInput','sendBtn',
-   'lightbox','lightboxBody','lightboxClose'
+   'lightbox','lightboxBody','lightboxClose',
+   'exportBtn','exportMenu','exportTxtBtn','exportJsonBtn',
+   'importBackupBtn','importBackupInput'
   ].forEach(function(id){ els[id] = document.getElementById(id); });
+
+  function downloadBlob(content, filename, mime){
+    var blob = new Blob([content], {type: mime});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+  function safeFilename(s){ return (s||'conversa').replace(/[^\w\-]+/g,'_'); }
+
+  function exportTxt(chat){
+    var lines = [];
+    chat.messages.forEach(function(m){
+      var parts = (m.dateKey||'0000-01-01').split('-');
+      var dateStr = String(parts[2]||'01').padStart(2,'0') + '/' + String(parts[1]||'01').padStart(2,'0') + '/' + (parts[0]||'0000');
+      var time = (m.time||'00:00') + ':00';
+      if(m.type === 'system'){
+        lines.push('[' + dateStr + ', ' + time + '] ' + chat.name + ': ' + (m.text||''));
+        return;
+      }
+      var sender = m.dir === 'out' ? 'Você' : (chat.name || 'Contato');
+      if(m.type === 'text'){
+        lines.push('[' + dateStr + ', ' + time + '] ' + sender + ': ' + (m.text||''));
+      } else {
+        var ext = m.type==='photo' ? 'jpg' : m.type==='video' ? 'mp4' : m.type==='audio' ? 'opus' : 'webp';
+        var fname = m.mediaName || ('midia.' + ext);
+        lines.push('[' + dateStr + ', ' + time + '] ' + sender + ': <anexado: ' + fname + '>');
+      }
+    });
+    downloadBlob(lines.join('\n'), safeFilename(chat.name) + '.txt', 'text/plain;charset=utf-8');
+  }
+  function exportJson(chat){
+    downloadBlob(JSON.stringify(chat, null, 2), safeFilename(chat.name) + '.json', 'application/json');
+  }
+
+  els.exportBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    els.exportMenu.classList.toggle('show');
+  });
+  document.addEventListener('click', function(){ els.exportMenu.classList.remove('show'); });
+  els.exportTxtBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    if(currentChat) exportTxt(currentChat);
+    els.exportMenu.classList.remove('show');
+  });
+  els.exportJsonBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    if(currentChat) exportJson(currentChat);
+    els.exportMenu.classList.remove('show');
+  });
+
+  els.importBackupBtn.addEventListener('click', function(){ els.importBackupInput.click(); });
+  els.importBackupInput.addEventListener('change', function(e){
+    var f = e.target.files[0]; if(!f) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var chat = JSON.parse(reader.result);
+        if(!chat || !Array.isArray(chat.messages)) throw new Error('formato inválido');
+        chat.id = uid();
+        chat.updatedAt = Date.now();
+        dbPut(chat).then(loadChatList);
+      } catch(err){
+        alert('Não consegui ler esse backup: ' + err.message);
+      }
+      els.importBackupInput.value = '';
+    };
+    reader.readAsText(f);
+  });
 
   function showScreen(name){
     els.screenHome.classList.toggle('active', name==='home');
