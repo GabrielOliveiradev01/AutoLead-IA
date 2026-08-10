@@ -67,7 +67,6 @@
   .chatrow .cname{font-size:16px;font-weight:600;}
   .chatrow .csnippet{font-size:13px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .chatrow .ctime{font-size:12px;color:var(--text-dim);}
-  .chatrow .cdel{background:none;border:0;color:#8696a0;font-size:14px;padding:6px;cursor:pointer;}
   .empty-hint{padding:40px 24px;text-align:center;color:var(--text-dim);font-size:14px;line-height:1.6;}
 
   .fab-new{
@@ -82,12 +81,16 @@
     position:absolute;inset:0;background:#111b21;display:none;flex-direction:column;z-index:9;
   }
   .sheet.show{display:flex;}
-  .sheet .sheetHeader{
-    padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.08);
+  .sheetHeader{
+    padding:calc(14px + env(safe-area-inset-top)) 16px 14px;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;
   }
-  .sheet .sheetHeader button{background:none;border:0;color:#00a884;font-size:16px;cursor:pointer;}
-  .sheet .sheetHeader h2{font-size:17px;margin:0;flex:1;}
+  .sheetHeader button{background:none;border:0;color:#00a884;font-size:16px;cursor:pointer;}
+  .sheetHeader h2{font-size:17px;margin:0;flex:1;color:#fff;}
   .sheetBody{flex:1;overflow-y:auto;padding:16px;}
+  .contactHero{display:flex;flex-direction:column;align-items:center;gap:10px;padding:20px 0 28px;}
+  .contactHero .avatar{width:96px;height:96px;}
+  .contactHero .avatar svg{width:48px;height:48px;}
+  .contactHeroName{font-size:19px;font-weight:600;color:#fff;}
   .field{margin-bottom:18px;}
   .field label{display:block;font-size:12.5px;color:var(--text-dim);margin-bottom:6px;}
   .field input[type=text]{
@@ -120,26 +123,18 @@
     background:linear-gradient(rgba(0,0,0,.28), rgba(0,0,0,0));flex-shrink:0;
   }
   .header .back{font-size:26px;font-weight:300;opacity:.95;cursor:pointer;background:none;border:0;color:#fff;}
+  .unreadBadge{color:#fff;font-size:16px;font-weight:600;margin-left:-4px;}
   .avatar{
     width:36px;height:36px;border-radius:50%;background:#3a4750;background-size:cover;background-position:center;
     display:flex;align-items:center;justify-content:center;color:#aeb9bf;flex-shrink:0;
   }
   .avatar svg{width:20px;height:20px;fill:currentColor;}
+  .headWho{display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer;background:none;border:0;text-align:left;padding:0;}
   .who{flex:1;line-height:1.2;min-width:0;}
-  .who .name{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .who .name{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;}
   .icons{display:flex;gap:16px;align-items:center;}
   .icons svg{width:21px;height:21px;fill:none;stroke:#fff;stroke-width:1.6;}
   .icons button{background:none;border:0;padding:0;cursor:pointer;line-height:1;}
-  #menuBtn{font-size:21px;font-weight:700;color:#fff;padding:0 3px;}
-  .exportWrap{position:relative;}
-  .exportMenu{
-    position:absolute;top:28px;right:0;background:#233138;border:1px solid rgba(255,255,255,.15);
-    border-radius:8px;padding:6px;display:none;flex-direction:column;gap:2px;z-index:15;
-    min-width:190px;box-shadow:0 4px 14px rgba(0,0,0,.4);
-  }
-  .exportMenu.show{display:flex;}
-  .exportMenu button{background:none;border:0;color:#e9edef;text-align:left;padding:9px 10px;font-size:13px;border-radius:6px;cursor:pointer;}
-  .exportMenu button:active{background:rgba(255,255,255,.1);}
   .homeHeader .icons{gap:10px;}
   .homeHeader button.textbtn{background:none;border:0;color:#00a884;font-size:22px;cursor:pointer;}
 
@@ -271,21 +266,14 @@
       <div id="screenChat" class="screen">
         <div class="header">
           <button class="back" id="backBtn">‹</button>
-          <div class="avatar" id="chatAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg></div>
-          <div class="who"><div class="name" id="chatName">Contato</div></div>
+          <span class="unreadBadge" id="unreadBadge" style="display:none;"></span>
+          <div class="headWho" id="openContactBtn">
+            <div class="avatar" id="chatAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg></div>
+            <div class="who"><div class="name" id="chatName">Contato</div></div>
+          </div>
           <div class="icons">
-            <button id="dirToggle" class="dirToggle" title="Trocar quem está mandando a mensagem">Você</button>
             <svg viewBox="0 0 24 24"><path d="M3 6h11v12H3zM14 10l6-3.5v11L14 14"/></svg>
             <svg viewBox="0 0 24 24"><path d="M4 4c0 9 7 16 16 16l3-4-6-2-2 2c-2-1-4-3-5-5l2-2-2-6z"/></svg>
-            <div class="exportWrap">
-              <button id="menuBtn" title="Mais opções">⋮</button>
-              <div class="exportMenu" id="exportMenu">
-                <button id="wallpaperBtn">Definir foto de fundo</button>
-                <button id="wallpaperReset">Remover foto de fundo</button>
-                <button id="exportTxtBtn">Baixar .txt (estilo WhatsApp)</button>
-                <button id="exportJsonBtn">Baixar backup completo (.json)</button>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -311,6 +299,45 @@
         <div class="lightbox" id="lightbox">
           <button class="close" id="lightboxClose">✕</button>
           <div id="lightboxBody"></div>
+        </div>
+      </div>
+
+      <!-- CONTACT INFO -->
+      <div id="screenContact" class="screen">
+        <div class="sheetHeader">
+          <button id="contactBackBtn">‹ Voltar</button>
+          <h2>Dados do contato</h2>
+          <span style="width:56px"></span>
+        </div>
+        <div class="sheetBody">
+          <div class="contactHero">
+            <div class="avatar" id="contactAvatarBig"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg></div>
+            <div class="contactHeroName" id="contactNameBig">Contato</div>
+            <label class="filebtn">Trocar foto do contato<input type="file" id="fChangeAvatar" accept="image/*" style="display:none"></label>
+          </div>
+
+          <div class="field">
+            <label>Papel de parede desta conversa</label>
+            <div class="whoRow">
+              <button id="wallpaperBtn">Definir foto de fundo</button>
+              <button id="wallpaperReset">Remover foto de fundo</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Quem envia a próxima mensagem digitada</label>
+            <div class="whoRow">
+              <button id="dirToggle" title="Trocar quem está mandando a mensagem">Você</button>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Exportar conversa</label>
+            <div class="whoRow" style="flex-direction:column;align-items:stretch;">
+              <button id="exportTxtBtn">Baixar .txt (estilo WhatsApp)</button>
+              <button id="exportJsonBtn">Baixar backup completo (.json)</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -418,13 +445,13 @@
   // ---------- app state ----------
   var currentChat = null;
   var els = {};
-  ['screenHome','screenChat','chatList','fabNew','newChatSheet','openNewChat','cancelNewChat',
+  ['screenHome','screenChat','screenContact','chatList','fabNew','newChatSheet','openNewChat','cancelNewChat',
    'fContactName','fAvatar','fAvatarName','fWallpaper','fWallpaperName','fChatTxt','fChatTxtName',
    'mediaField','fMedia','fMediaName','whoField','whoRow','startChatBtn',
-   'backBtn','chatAvatar','chatName','messagesContainer','scrollArea',
+   'backBtn','unreadBadge','openContactBtn','chatAvatar','chatName','messagesContainer','scrollArea',
    'wallpaperBtn','wallpaperReset','wallpaperInput','msgInput','sendBtn','dirToggle',
    'lightbox','lightboxBody','lightboxClose',
-   'menuBtn','exportMenu','exportTxtBtn','exportJsonBtn',
+   'contactBackBtn','contactAvatarBig','contactNameBig','fChangeAvatar','exportTxtBtn','exportJsonBtn',
    'importBackupBtn','importBackupInput'
   ].forEach(function(id){ els[id] = document.getElementById(id); });
 
@@ -463,21 +490,8 @@
     downloadBlob(JSON.stringify(chat, null, 2), safeFilename(chat.name) + '.json', 'application/json');
   }
 
-  els.menuBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    els.exportMenu.classList.toggle('show');
-  });
-  document.addEventListener('click', function(){ els.exportMenu.classList.remove('show'); });
-  els.exportTxtBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    if(currentChat) exportTxt(currentChat);
-    els.exportMenu.classList.remove('show');
-  });
-  els.exportJsonBtn.addEventListener('click', function(e){
-    e.stopPropagation();
-    if(currentChat) exportJson(currentChat);
-    els.exportMenu.classList.remove('show');
-  });
+  els.exportTxtBtn.addEventListener('click', function(){ if(currentChat) exportTxt(currentChat); });
+  els.exportJsonBtn.addEventListener('click', function(){ if(currentChat) exportJson(currentChat); });
 
   els.importBackupBtn.addEventListener('click', function(){ els.importBackupInput.click(); });
   els.importBackupInput.addEventListener('change', function(e){
@@ -501,6 +515,7 @@
   function showScreen(name){
     els.screenHome.classList.toggle('active', name==='home');
     els.screenChat.classList.toggle('active', name==='chat');
+    els.screenContact.classList.toggle('active', name==='contact');
   }
 
   // ---------- home / chat list ----------
@@ -521,18 +536,8 @@
           (chat.avatar ? '' : '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>') +
         '</div>' +
         '<div class="cinfo"><div class="cname">' + escapeHtml(chat.name || 'Sem nome') + '</div>' +
-        '<div class="csnippet">' + escapeHtml((snippet||'').split('\n')[0]) + '</div></div>' +
-        '<button class="cdel" data-id="' + chat.id + '">🗑</button>';
-      row.addEventListener('click', function(e){
-        if(e.target.closest('.cdel')) return;
-        openChat(chat);
-      });
-      row.querySelector('.cdel').addEventListener('click', function(e){
-        e.stopPropagation();
-        if(confirm('Excluir esta conversa salva no navegador?')){
-          dbDelete(chat.id).then(loadChatList);
-        }
-      });
+        '<div class="csnippet">' + escapeHtml((snippet||'').split('\n')[0]) + '</div></div>';
+      row.addEventListener('click', function(){ openChat(chat); });
       els.chatList.appendChild(row);
     });
   }
@@ -625,7 +630,8 @@
     }
     var chat = {
       id: uid(), name: name, avatar: pendingAvatar, wallpaper: pendingWallpaper,
-      messages: messages, updatedAt: Date.now()
+      messages: messages, updatedAt: Date.now(),
+      unread: messages.filter(function(m){ return m.dir === 'in'; }).length
     };
     dbPut(chat).then(function(){
       els.newChatSheet.classList.remove('show');
@@ -759,22 +765,61 @@
     return url ? 'linear-gradient(rgba(0,0,0,.38), rgba(0,0,0,.38)), url("' + url + '")' : '';
   }
 
+  function refreshAvatarUI(chat){
+    var img = chat.avatar ? 'url(' + chat.avatar + ')' : '';
+    var placeholder = '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>';
+    els.chatAvatar.style.backgroundImage = img;
+    els.chatAvatar.innerHTML = chat.avatar ? '' : placeholder;
+    els.contactAvatarBig.style.backgroundImage = img;
+    els.contactAvatarBig.innerHTML = chat.avatar ? '' : placeholder;
+  }
+
   function openChat(chat){
     currentChat = chat;
     sendDir = 'out';
     updateDirToggle();
     els.chatName.textContent = chat.name;
-    els.chatAvatar.style.backgroundImage = chat.avatar ? 'url(' + chat.avatar + ')' : '';
-    els.chatAvatar.innerHTML = chat.avatar ? '' : '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>';
+    refreshAvatarUI(chat);
     var chatEl = document.getElementById('screenChat');
     chatEl.style.backgroundImage = wallpaperCss(chat.wallpaper);
     renderMessages(chat);
     showScreen('chat');
+
+    dbGetAll().then(function(chats){
+      var total = chats.filter(function(c){ return c.id !== chat.id; })
+        .reduce(function(sum, c){ return sum + (c.unread || 0); }, 0);
+      if(total > 0){
+        els.unreadBadge.textContent = total;
+        els.unreadBadge.style.display = 'inline';
+      } else {
+        els.unreadBadge.style.display = 'none';
+      }
+    });
+    if(chat.unread){
+      chat.unread = 0;
+      dbPut(chat);
+    }
   }
 
   els.backBtn.addEventListener('click', function(){ showScreen('home'); loadChatList(); });
 
-  els.wallpaperBtn.addEventListener('click', function(){ els.exportMenu.classList.remove('show'); els.wallpaperInput.click(); });
+  els.openContactBtn.addEventListener('click', function(){
+    if(!currentChat) return;
+    els.contactNameBig.textContent = currentChat.name;
+    refreshAvatarUI(currentChat);
+    showScreen('contact');
+  });
+  els.contactBackBtn.addEventListener('click', function(){ showScreen('chat'); });
+  els.fChangeAvatar.addEventListener('change', function(e){
+    var f = e.target.files[0]; if(!f || !currentChat) return;
+    fileToDataURL(f).then(function(url){
+      currentChat.avatar = url;
+      refreshAvatarUI(currentChat);
+      dbPut(currentChat);
+    });
+  });
+
+  els.wallpaperBtn.addEventListener('click', function(){ els.wallpaperInput.click(); });
   els.wallpaperInput.addEventListener('change', function(e){
     var f = e.target.files[0]; if(!f || !currentChat) return;
     fileToDataURL(f).then(function(url){
@@ -784,7 +829,6 @@
     });
   });
   els.wallpaperReset.addEventListener('click', function(){
-    els.exportMenu.classList.remove('show');
     if(!currentChat) return;
     currentChat.wallpaper = null;
     document.getElementById('screenChat').style.backgroundImage = '';
