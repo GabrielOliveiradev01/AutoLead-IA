@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chat Mockup — protótipo local</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icons/icon-32.png" sizes="32x32">
@@ -22,47 +22,21 @@
     --frame-shadow: 0 20px 60px rgba(0,0,0,.5);
   }
   *{box-sizing:border-box;}
-  body{
+  html,body{
     margin:0;
-    min-height:100vh;
+    height:100%;
     background:var(--page-bg);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:32px 12px;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  }
-  .caption{
-    position:fixed;
-    top:14px; left:0; right:0;
-    text-align:center;
-    color:#8a9198;
-    font-size:12.5px;
-    letter-spacing:.02em;
+    overscroll-behavior:none;
   }
   .phone{
-    width:390px;
-    max-width:100%;
-    height:800px;
-    max-height:92vh;
+    width:100%;
+    height:100dvh;
     background:#0b141a;
-    border-radius:36px;
-    overflow:hidden;
-    box-shadow:var(--frame-shadow);
     display:flex;
     flex-direction:column;
-    border:6px solid #111;
     position:relative;
     color:var(--text);
-  }
-  .notch{
-    position:absolute; top:9px; left:50%; transform:translateX(-50%);
-    width:100px; height:26px; background:#000; border-radius:16px; z-index:8;
-  }
-  .screens{margin-top:22px;}
-  .home-indicator{
-    position:absolute; bottom:7px; left:50%; transform:translateX(-50%);
-    width:134px; height:5px; background:#fff; border-radius:3px; opacity:.9; z-index:8;
   }
 
   .screens{flex:1;position:relative;min-height:0;}
@@ -71,7 +45,7 @@
 
   /* ---------- HOME ---------- */
   #screenHome .homeHeader{
-    padding:6px 16px 10px; display:flex; align-items:center; justify-content:space-between;
+    padding:calc(6px + env(safe-area-inset-top)) 16px 10px; display:flex; align-items:center; justify-content:space-between;
   }
   #screenHome .homeHeader h1{font-size:26px;font-weight:700;margin:0;}
   #screenHome .homeHeader button{
@@ -97,7 +71,7 @@
   .empty-hint{padding:40px 24px;text-align:center;color:var(--text-dim);font-size:14px;line-height:1.6;}
 
   .fab-new{
-    position:absolute;right:18px;bottom:22px;
+    position:absolute;right:18px;bottom:calc(22px + env(safe-area-inset-bottom));
     width:52px;height:52px;border-radius:50%;background:#00a884;color:#fff;
     display:flex;align-items:center;justify-content:center;font-size:26px;border:0;
     box-shadow:0 4px 14px rgba(0,0,0,.4);cursor:pointer;
@@ -142,7 +116,7 @@
   /* ---------- CHAT ---------- */
   #screenChat{background-color:rgba(0,0,0,.16);background-size:cover;background-position:center;}
   .header{
-    position:relative;z-index:5;padding:6px 12px 12px;display:flex;align-items:center;gap:8px;
+    position:relative;z-index:5;padding:calc(6px + env(safe-area-inset-top)) 12px 12px;display:flex;align-items:center;gap:8px;
     background:linear-gradient(rgba(0,0,0,.28), rgba(0,0,0,0));flex-shrink:0;
   }
   .header .back{font-size:26px;font-weight:300;opacity:.95;cursor:pointer;background:none;border:0;color:#fff;}
@@ -203,14 +177,17 @@
   .audio .wave .fill{position:absolute;top:0;left:0;bottom:0;width:0;background:rgba(255,255,255,.4);}
   .audio .dur{font-size:11px;color:var(--text-dim);}
 
-  .footer{position:relative;z-index:5;padding:8px 10px;display:flex;align-items:center;gap:8px;background:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.35));flex-shrink:0;}
-  .plus{font-size:26px;font-weight:300;color:#fff;opacity:.9;width:24px;text-align:center;}
+  .footer{position:relative;z-index:5;padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;background:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.35));flex-shrink:0;}
+  .dirToggle{
+    border:0;border-radius:14px;padding:7px 10px;font-size:11px;font-weight:600;color:#fff;
+    max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;cursor:pointer;
+  }
   .inputpillwrap{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:2px 6px 2px 12px;display:flex;align-items:center;}
   .inputpillwrap input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14.5px;padding:7px 0;}
   .inputpillwrap input::placeholder{color:#8696a0;}
   #sendBtn{background:none;border:0;color:#00a884;font-size:20px;cursor:pointer;padding:6px;}
 
-  .fab{position:absolute;right:14px;bottom:78px;width:38px;height:38px;border-radius:50%;background:rgba(20,26,30,.72);border:1px solid rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;z-index:6;}
+  .fab{position:absolute;right:14px;bottom:calc(78px + env(safe-area-inset-bottom));width:38px;height:38px;border-radius:50%;background:rgba(20,26,30,.72);border:1px solid rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;z-index:6;}
   .fab.reset{right:60px;display:none;font-size:14px;}
 
   .lightbox{position:absolute;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;flex-direction:column;gap:14px;color:#fff;text-align:center;padding:24px;z-index:20;}
@@ -222,10 +199,7 @@
 </style>
 </head>
 <body>
-  <div class="caption">Protótipo local — nada sai do seu navegador (dados ficam salvos no IndexedDB deste dispositivo)</div>
   <div class="phone">
-    <div class="notch"></div>
-
     <div class="screens">
 
       <!-- HOME -->
@@ -311,7 +285,7 @@
         <input id="wallpaperInput" type="file" accept="image/*" style="display:none">
 
         <div class="footer">
-          <span class="plus">+</span>
+          <button id="dirToggle" class="dirToggle" title="Trocar quem está mandando a mensagem">Você</button>
           <div class="inputpillwrap">
             <input type="text" id="msgInput" placeholder="Mensagem">
           </div>
@@ -325,7 +299,6 @@
       </div>
 
     </div>
-    <div class="home-indicator"></div>
   </div>
 
 <script>
@@ -433,7 +406,7 @@
    'fContactName','fAvatar','fAvatarName','fWallpaper','fWallpaperName','fChatTxt','fChatTxtName',
    'mediaField','fMedia','fMediaName','whoField','whoRow','startChatBtn',
    'backBtn','chatAvatar','chatName','messagesContainer','scrollArea',
-   'wallpaperBtn','wallpaperReset','wallpaperInput','msgInput','sendBtn',
+   'wallpaperBtn','wallpaperReset','wallpaperInput','msgInput','sendBtn','dirToggle',
    'lightbox','lightboxBody','lightboxClose',
    'exportBtn','exportMenu','exportTxtBtn','exportJsonBtn',
    'importBackupBtn','importBackupInput'
@@ -751,8 +724,25 @@
     els.lightboxBody.innerHTML = '';
   });
 
+  var sendDir = 'out';
+  function updateDirToggle(){
+    if(sendDir === 'out'){
+      els.dirToggle.textContent = 'Você';
+      els.dirToggle.style.background = 'var(--bubble-out)';
+    } else {
+      els.dirToggle.textContent = (currentChat && currentChat.name) || 'Contato';
+      els.dirToggle.style.background = 'var(--bubble-in)';
+    }
+  }
+  els.dirToggle.addEventListener('click', function(){
+    sendDir = sendDir === 'out' ? 'in' : 'out';
+    updateDirToggle();
+  });
+
   function openChat(chat){
     currentChat = chat;
+    sendDir = 'out';
+    updateDirToggle();
     els.chatName.textContent = chat.name;
     els.chatAvatar.style.backgroundImage = chat.avatar ? 'url(' + chat.avatar + ')' : '';
     els.chatAvatar.innerHTML = chat.avatar ? '' : '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>';
@@ -796,7 +786,7 @@
     var dateKey = now.getFullYear()+'-'+(now.getMonth()+1)+'-'+now.getDate();
     var lastDateKey = currentChat.messages.length ? currentChat.messages[currentChat.messages.length-1].dateKey : null;
     currentChat.messages.push({
-      type:'text', dir:'out', text:text, time:time,
+      type:'text', dir:sendDir, text:text, time:time,
       dateKey:dateKey, dateLabel:dateLabel(now.getFullYear(), now.getMonth()+1, now.getDate())
     });
     currentChat.updatedAt = Date.now();
