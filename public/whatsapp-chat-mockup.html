@@ -178,14 +178,25 @@
   .audio .dur{font-size:11px;color:var(--text-dim);}
 
   .footer{position:relative;z-index:5;padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;background:linear-gradient(rgba(0,0,0,0), rgba(0,0,0,.35));flex-shrink:0;}
-  .dirToggle{
-    border:0;border-radius:14px;padding:7px 10px;font-size:11px;font-weight:600;color:#fff;
-    max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;cursor:pointer;
-  }
-  .inputpillwrap{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:2px 6px 2px 12px;display:flex;align-items:center;}
-  .inputpillwrap input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14.5px;padding:7px 0;}
+  .plus{font-size:26px;font-weight:300;color:#fff;opacity:.9;width:24px;text-align:center;flex-shrink:0;}
+  .inputpillwrap{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:2px 6px 2px 12px;display:flex;align-items:center;gap:6px;min-width:0;}
+  .inputpillwrap input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14.5px;padding:7px 0;min-width:0;}
   .inputpillwrap input::placeholder{color:#8696a0;}
-  #sendBtn{background:none;border:0;color:#00a884;font-size:20px;cursor:pointer;padding:6px;}
+  .stickerIcon{background:none;border:0;padding:4px;display:flex;align-items:center;flex-shrink:0;cursor:pointer;}
+  .stickerIcon svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:1.5;opacity:.85;}
+  .composeIcons{display:flex;align-items:center;gap:16px;flex-shrink:0;}
+  .composeIcons button{background:none;border:0;padding:0;cursor:pointer;line-height:1;}
+  .composeIcons svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:1.6;opacity:.95;}
+  #sendBtn{
+    width:38px;height:38px;border-radius:50%;background:#00c37a;border:0;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;
+  }
+  #sendBtn svg{width:16px;height:16px;fill:#fff;margin-left:2px;}
+
+  .dirToggle{
+    border:0;border-radius:14px;padding:6px 10px;font-size:11px;font-weight:600;color:#fff;
+    max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0;cursor:pointer;
+  }
 
   .fab{position:absolute;right:14px;bottom:calc(78px + env(safe-area-inset-bottom));width:38px;height:38px;border-radius:50%;background:rgba(20,26,30,.72);border:1px solid rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;z-index:6;}
   .fab.reset{right:60px;display:none;font-size:14px;}
@@ -264,6 +275,7 @@
           <div class="avatar" id="chatAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg></div>
           <div class="who"><div class="name" id="chatName">Contato</div></div>
           <div class="icons">
+            <button id="dirToggle" class="dirToggle" title="Trocar quem está mandando a mensagem">Você</button>
             <div class="exportWrap">
               <button id="exportBtn" title="Exportar conversa"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14"/></svg></button>
               <div class="exportMenu" id="exportMenu">
@@ -285,11 +297,16 @@
         <input id="wallpaperInput" type="file" accept="image/*" style="display:none">
 
         <div class="footer">
-          <button id="dirToggle" class="dirToggle" title="Trocar quem está mandando a mensagem">Você</button>
+          <span class="plus">+</span>
           <div class="inputpillwrap">
             <input type="text" id="msgInput" placeholder="Mensagem">
+            <button class="stickerIcon" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M9 10c.6 0 1-.4 1-1s-.4-1-1-1-1 .4-1 1 .4 1 1 1zm6 0c.6 0 1-.4 1-1s-.4-1-1-1-1 .4-1 1 .4 1 1 1zm-9 3c1 2 3 3.5 6 3.5s5-1.5 6-3.5" stroke-linecap="round"/><circle cx="12" cy="12" r="9.3"/></svg></button>
           </div>
-          <button id="sendBtn">➤</button>
+          <div class="composeIcons" id="composeIcons">
+            <button title="Câmera"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="14" r="4"/></svg></button>
+            <button title="Áudio"><svg viewBox="0 0 24 24"><path d="M12 15a3 3 0 003-3V6a3 3 0 00-6 0v6a3 3 0 003 3z"/><path d="M6 11a6 6 0 0012 0M12 19v3" stroke-linecap="round"/></svg></button>
+          </div>
+          <button id="sendBtn" style="display:none" title="Enviar"><svg viewBox="0 0 24 24"><path d="M3 12l18-9-7 9 7 9-18-9zm0 0h11"/></svg></button>
         </div>
 
         <div class="lightbox" id="lightbox">
@@ -791,11 +808,18 @@
     });
     currentChat.updatedAt = Date.now();
     els.msgInput.value = '';
+    document.getElementById('composeIcons').style.display = 'flex';
+    els.sendBtn.style.display = 'none';
     dbPut(currentChat);
     renderMessages(currentChat);
   }
   els.sendBtn.addEventListener('click', sendMessage);
   els.msgInput.addEventListener('keydown', function(e){ if(e.key==='Enter') sendMessage(); });
+  els.msgInput.addEventListener('input', function(){
+    var hasText = els.msgInput.value.trim().length > 0;
+    document.getElementById('composeIcons').style.display = hasText ? 'none' : 'flex';
+    els.sendBtn.style.display = hasText ? 'flex' : 'none';
+  });
 
   // ---------- seed a fictional demo chat on first run (no real personal data) ----------
   var SEED_TEXT = [
