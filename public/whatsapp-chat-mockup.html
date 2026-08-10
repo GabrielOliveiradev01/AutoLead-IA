@@ -203,6 +203,26 @@
   .lightbox img, .lightbox video{max-width:100%;max-height:70%;border-radius:8px;}
   .lightbox p{font-size:13px;color:#cfd6d8;max-width:260px;line-height:1.5;margin:0;}
   .lightbox .close{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.12);border:0;color:#fff;font-size:16px;cursor:pointer;}
+
+  .bubble[data-editidx]{cursor:pointer;}
+  .editOverlay{
+    position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;
+    align-items:flex-end;justify-content:center;z-index:25;
+  }
+  .editOverlay.show{display:flex;}
+  .editCard{
+    width:100%;background:#1f2c34;border-radius:16px 16px 0 0;padding:16px;
+    padding-bottom:calc(16px + env(safe-area-inset-bottom));
+  }
+  .editCard textarea{
+    width:100%;background:#111b21;border:1px solid rgba(255,255,255,.15);border-radius:10px;
+    color:#fff;padding:10px 12px;font-size:15px;font-family:inherit;resize:vertical;
+  }
+  .editActions{display:flex;align-items:center;gap:10px;margin-top:12px;}
+  .editActions button{border:0;border-radius:10px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer;}
+  .editPrimary{background:#00a884;color:#04120e;}
+  .editGhost{background:rgba(255,255,255,.1);color:#fff;}
+  .editDanger{background:rgba(255,80,80,.14);color:#ff8686;}
 </style>
 </head>
 <body>
@@ -301,6 +321,18 @@
         <div class="lightbox" id="lightbox">
           <button class="close" id="lightboxClose">✕</button>
           <div id="lightboxBody"></div>
+        </div>
+
+        <div class="editOverlay" id="editOverlay">
+          <div class="editCard">
+            <textarea id="editTextarea" rows="3"></textarea>
+            <div class="editActions">
+              <button id="editDeleteBtn" class="editDanger">Excluir</button>
+              <div style="flex:1"></div>
+              <button id="editCancelBtn" class="editGhost">Cancelar</button>
+              <button id="editSaveBtn" class="editPrimary">Salvar</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -454,7 +486,8 @@
    'wallpaperBtn','wallpaperReset','wallpaperInput','msgInput','sendBtn','dirToggle',
    'lightbox','lightboxBody','lightboxClose',
    'contactBackBtn','contactAvatarBig','contactNameBig','fChangeAvatar','exportTxtBtn','exportJsonBtn',
-   'importBackupBtn','importBackupInput'
+   'importBackupBtn','importBackupInput',
+   'editOverlay','editTextarea','editSaveBtn','editDeleteBtn','editCancelBtn'
   ].forEach(function(id){ els[id] = document.getElementById(id); });
 
   function downloadBlob(content, filename, mime){
@@ -645,14 +678,16 @@
   // ---------- chat screen ----------
   function fmtTime(t){ return t; }
 
-  function bubbleHTML(msg){
+  function bubbleHTML(msg, idx){
     if(msg.type === 'system'){
       return '<div class="system"><span>' + escapeHtml(msg.text) + '</span></div>';
     }
     var meta = '<span class="meta">' + escapeHtml(msg.time||'') + (msg.dir==='out' ? ' <span class="check">✓✓</span>' : '') + '</span>';
     var inner = '';
+    var editAttr = '';
     if(msg.type === 'text'){
       inner = escapeHtml(msg.text||'') + meta;
+      editAttr = ' data-editidx="' + idx + '"';
     } else if(msg.type === 'photo'){
       inner = '<div class="media photo">' +
         '<div class="thumb" data-lb="photo" data-src="' + (msg.media||'') + '" style="' + (msg.media ? 'background-image:url(' + msg.media + ');width:190px;height:190px;' : '') + '">' +
@@ -670,21 +705,21 @@
     } else {
       inner = '<div class="media"><div class="thumb">📎</div><div><div class="label">' + escapeHtml(msg.mediaName||'Arquivo') + '</div></div></div>' + meta;
     }
-    return '<div class="row ' + (msg.dir||'in') + '"><div class="bubble ' + (msg.type!=='text'&&msg.type!=='system' ? '' : '') + '">' + inner + '</div></div>';
+    return '<div class="row ' + (msg.dir||'in') + '"><div class="bubble"' + editAttr + '>' + inner + '</div></div>';
   }
 
   function renderMessages(chat){
     var html = '';
     var lastDate = null;
-    chat.messages.forEach(function(msg){
+    chat.messages.forEach(function(msg, idx){
       if(msg.dateKey && msg.dateKey !== lastDate){
         html += '<div class="daysep"><span>' + escapeHtml(msg.dateLabel||'') + '</span></div>';
         lastDate = msg.dateKey;
       }
-      html += bubbleHTML(msg);
+      html += bubbleHTML(msg, idx);
     });
     els.messagesContainer.innerHTML = html || '<div class="empty-hint">Sem mensagens ainda. Manda uma aí embaixo.</div>';
-    wireAudio(); wireLightbox();
+    wireAudio(); wireLightbox(); wireEditable();
     els.scrollArea.scrollTop = els.scrollArea.scrollHeight;
   }
 
@@ -743,6 +778,44 @@
       });
     });
   }
+  var editingIdx = -1;
+  function openEdit(idx){
+    if(!currentChat || !currentChat.messages[idx]) return;
+    editingIdx = idx;
+    els.editTextarea.value = currentChat.messages[idx].text || '';
+    els.editOverlay.classList.add('show');
+    els.editTextarea.focus();
+  }
+  function closeEdit(){
+    els.editOverlay.classList.remove('show');
+    editingIdx = -1;
+  }
+  function wireEditable(){
+    els.messagesContainer.querySelectorAll('.bubble[data-editidx]').forEach(function(bubble){
+      bubble.addEventListener('click', function(){ openEdit(parseInt(bubble.dataset.editidx, 10)); });
+    });
+  }
+  els.editOverlay.addEventListener('click', function(e){ if(e.target === els.editOverlay) closeEdit(); });
+  els.editCancelBtn.addEventListener('click', closeEdit);
+  els.editSaveBtn.addEventListener('click', function(){
+    if(editingIdx < 0 || !currentChat) return;
+    var text = els.editTextarea.value.trim();
+    if(!text){ closeEdit(); return; }
+    currentChat.messages[editingIdx].text = text;
+    currentChat.updatedAt = Date.now();
+    dbPut(currentChat);
+    renderMessages(currentChat);
+    closeEdit();
+  });
+  els.editDeleteBtn.addEventListener('click', function(){
+    if(editingIdx < 0 || !currentChat) return;
+    currentChat.messages.splice(editingIdx, 1);
+    currentChat.updatedAt = Date.now();
+    dbPut(currentChat);
+    renderMessages(currentChat);
+    closeEdit();
+  });
+
   els.lightboxClose.addEventListener('click', function(){
     els.lightbox.classList.remove('show');
     els.lightboxBody.innerHTML = '';
