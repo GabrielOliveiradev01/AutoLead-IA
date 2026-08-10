@@ -755,6 +755,10 @@
     updateDirToggle();
   });
 
+  function wallpaperCss(url){
+    return url ? 'linear-gradient(rgba(0,0,0,.38), rgba(0,0,0,.38)), url("' + url + '")' : '';
+  }
+
   function openChat(chat){
     currentChat = chat;
     sendDir = 'out';
@@ -763,7 +767,7 @@
     els.chatAvatar.style.backgroundImage = chat.avatar ? 'url(' + chat.avatar + ')' : '';
     els.chatAvatar.innerHTML = chat.avatar ? '' : '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>';
     var chatEl = document.getElementById('screenChat');
-    chatEl.style.backgroundImage = chat.wallpaper ? 'url(' + chat.wallpaper + ')' : '';
+    chatEl.style.backgroundImage = wallpaperCss(chat.wallpaper);
     renderMessages(chat);
     showScreen('chat');
   }
@@ -775,7 +779,7 @@
     var f = e.target.files[0]; if(!f || !currentChat) return;
     fileToDataURL(f).then(function(url){
       currentChat.wallpaper = url;
-      document.getElementById('screenChat').style.backgroundImage = 'url(' + url + ')';
+      document.getElementById('screenChat').style.backgroundImage = wallpaperCss(url);
       dbPut(currentChat);
     });
   });
