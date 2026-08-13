@@ -87,6 +87,28 @@
   .tabsRow .tab.active{background:#00a884;color:#04120e;}
 
   .chatlist{flex:1;overflow-y:auto;padding:0 8px;}
+
+  .bottomNav{
+    display:flex;flex-shrink:0;border-top:1px solid rgba(255,255,255,.08);
+    padding:8px 4px calc(6px + env(safe-area-inset-bottom));
+  }
+  .navItem{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-dim);
+  }
+  .navItem svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.7;}
+  .navItem span{font-size:10.5px;}
+  .navItem.active{color:#fff;}
+  .navItem.active svg{fill:currentColor;}
+  .navIconWrap{position:relative;}
+  .navBadge{
+    position:absolute;top:-6px;right:-10px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;
+    background:#00a884;color:#04120e;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;
+  }
+  .navAvatar{
+    width:23px;height:23px;border-radius:50%;background:#3a4750;color:#aeb9bf;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .navAvatar svg{width:14px;height:14px;fill:currentColor;stroke:none;}
   .chatrow{
     display:flex;align-items:center;gap:12px;padding:10px 8px;
     border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer;
@@ -209,7 +231,6 @@
   .audio .dur{font-size:11px;color:var(--text-dim);}
 
   .footer{position:relative;z-index:5;padding:8px 10px calc(8px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;background:rgba(11,20,26,.62);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);flex-shrink:0;}
-  .plus{font-size:26px;font-weight:300;color:#fff;opacity:.9;width:24px;text-align:center;flex-shrink:0;}
   .inputpillwrap{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:20px;padding:2px 6px 2px 12px;display:flex;align-items:center;gap:6px;min-width:0;}
   .inputpillwrap input{flex:1;background:none;border:0;outline:0;color:#fff;font-size:14.5px;padding:7px 0;min-width:0;}
   .inputpillwrap input::placeholder{color:#8696a0;}
@@ -289,6 +310,34 @@
 
         <div class="chatlist" id="chatList"></div>
 
+        <div class="bottomNav">
+          <div class="navItem">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <span>Atualizações</span>
+          </div>
+          <div class="navItem">
+            <svg viewBox="0 0 24 24"><path d="M4 4c0 9 7 16 16 16l3-4-6-2-2 2c-2-1-4-3-5-5l2-2-2-6z"/></svg>
+            <span>Ligações</span>
+          </div>
+          <div class="navItem">
+            <svg viewBox="0 0 24 24"><path d="M12 3l2.2 4.5L19 9l-3.5 3.4.8 4.9L12 15l-4.3 2.3.8-4.9L5 9l4.8-1.5z"/></svg>
+            <span>Meta AI</span>
+          </div>
+          <div class="navItem active">
+            <div class="navIconWrap">
+              <svg viewBox="0 0 24 24"><path d="M4 4h16v11H8l-4 4z"/></svg>
+              <span class="navBadge" id="navUnreadBadge" style="display:none;"></span>
+            </div>
+            <span>Conversas</span>
+          </div>
+          <div class="navItem">
+            <div class="navIconWrap">
+              <div class="navAvatar"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg></div>
+            </div>
+            <span>Você</span>
+          </div>
+        </div>
+
         <div class="sheet" id="newChatSheet">
           <div class="sheetHeader">
             <button id="cancelNewChat">Cancelar</button>
@@ -349,7 +398,6 @@
         <input id="wallpaperInput" type="file" accept="image/*" style="display:none">
 
         <div class="footer">
-          <span class="plus">+</span>
           <div class="inputpillwrap">
             <input type="text" id="msgInput" placeholder="Mensagem">
             <button class="stickerIcon" tabindex="-1"><svg viewBox="0 0 24 24"><path d="M9 10c.6 0 1-.4 1-1s-.4-1-1-1-1 .4-1 1 .4 1 1 1zm6 0c.6 0 1-.4 1-1s-.4-1-1-1-1 .4-1 1 .4 1 1 1zm-9 3c1 2 3 3.5 6 3.5s5-1.5 6-3.5" stroke-linecap="round"/><circle cx="12" cy="12" r="9.3"/></svg></button>
@@ -523,7 +571,7 @@
   var currentChat = null;
   var els = {};
   ['screenHome','screenChat','screenContact','chatList','fabNew','newChatSheet','cancelNewChat',
-   'homeMenuBtn','homeMenu','chatSearch','tabAll','tabUnread','tabUnreadCount',
+   'homeMenuBtn','homeMenu','chatSearch','tabAll','tabUnread','tabUnreadCount','navUnreadBadge',
    'fContactName','fAvatar','fAvatarName','fWallpaper','fWallpaperName','fChatTxt','fChatTxtName',
    'mediaField','fMedia','fMediaName','whoField','whoRow','startChatBtn',
    'backBtn','unreadBadge','openContactBtn','chatAvatar','chatName','messagesContainer','scrollArea',
@@ -638,6 +686,12 @@
     renderChatList(list);
     var unreadChats = allChats.filter(function(c){ return c.unread > 0; }).length;
     els.tabUnreadCount.textContent = unreadChats > 0 ? (' ' + unreadChats) : '';
+    if(unreadChats > 0){
+      els.navUnreadBadge.textContent = unreadChats;
+      els.navUnreadBadge.style.display = 'flex';
+    } else {
+      els.navUnreadBadge.style.display = 'none';
+    }
   }
 
   function loadChatList(){
