@@ -69,8 +69,8 @@
   .homeMenu button{background:none;border:0;color:#e9edef;text-align:left;padding:9px 10px;font-size:13px;border-radius:6px;cursor:pointer;}
   .homeMenu button:active{background:rgba(255,255,255,.1);}
 
-  .homeTitleRow{padding:4px 16px 12px;flex-shrink:0;}
-  .homeTitleRow h1{font-size:28px;font-weight:700;margin:0;}
+  .homeTitleRow{padding:4px 16px 14px;flex-shrink:0;}
+  .homeTitleRow h1{font-size:32px;font-weight:800;letter-spacing:-.5px;margin:0;}
 
   .searchWrap{margin:0 16px 12px;position:relative;flex-shrink:0;}
   .searchWrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:none;stroke:var(--text-dim);stroke-width:2;}
@@ -86,8 +86,15 @@
     font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;
   }
   .tabsRow .tab.active{background:#00a884;color:#04120e;}
+  .tabsRow .tab.deco{cursor:default;}
 
   .chatlist{flex:1;overflow-y:auto;padding:0 8px;}
+  .archivedRow{
+    display:flex;align-items:center;gap:14px;padding:10px 8px;color:var(--text-dim);
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  .archivedRow svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;flex-shrink:0;}
+  .archivedRow span{font-size:14.5px;flex:1;}
 
   .bottomNav{
     display:flex;flex-shrink:0;border-top:1px solid rgba(255,255,255,.08);
@@ -121,11 +128,14 @@
     display:flex;align-items:center;justify-content:center;color:#aeb9bf;
   }
   .chatrow .cavatar svg{width:26px;height:26px;fill:currentColor;}
+  .chatrow .cavatar .monogram{font-size:17px;font-weight:700;color:#fff;}
   .chatrow .cinfo{flex:1;min-width:0;}
-  .chatrow .cname{font-size:16px;font-weight:600;}
+  .chatrow .cname{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .chatrow .csnippet{font-size:13px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chatrow .csnippet .sentcheck{color:var(--check-blue);margin-right:2px;}
   .chatrow .cside{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
   .chatrow .ctime{font-size:12px;color:var(--text-dim);}
+  .chatrow .cpin{width:14px;height:14px;fill:var(--text-dim);}
   .chatrow .cbadge{
     min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#00a884;color:#04120e;
     font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;
@@ -185,6 +195,8 @@
     display:flex;align-items:center;justify-content:center;color:#aeb9bf;flex-shrink:0;
   }
   .avatar svg{width:20px;height:20px;fill:currentColor;}
+  .avatar .monogram{font-size:14px;font-weight:700;color:#fff;}
+  .contactHero .avatar .monogram{font-size:34px;}
   .headWho{display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer;background:none;border:0;text-align:left;padding:0;}
   .who{flex:1;line-height:1.2;min-width:0;}
   .who .name{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff;}
@@ -301,15 +313,23 @@
 
         <div class="searchWrap">
           <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
-          <input type="text" id="chatSearch" placeholder="Pesquisar">
+          <input type="text" id="chatSearch" placeholder="Pergunte à Meta AI ou pesquise">
         </div>
 
         <div class="tabsRow">
           <button class="tab active" id="tabAll">Todas</button>
           <button class="tab" id="tabUnread">Não lidas<span id="tabUnreadCount"></span></button>
+          <button class="tab deco">Favoritos</button>
+          <button class="tab deco">Grupos</button>
         </div>
 
-        <div class="chatlist" id="chatList"></div>
+        <div class="chatlist" id="chatList">
+          <div class="archivedRow">
+            <svg viewBox="0 0 24 24"><path d="M3 7h18v3H3zM4 10h16v10H4z"/><path d="M10 14h4" stroke-linecap="round"/></svg>
+            <span>Arquivadas</span>
+          </div>
+          <div id="chatListItems"></div>
+        </div>
 
         <div class="bottomNav">
           <div class="navItem">
@@ -443,6 +463,13 @@
           </div>
 
           <div class="field">
+            <label>Conversa fixada no topo da lista</label>
+            <div class="whoRow">
+              <button id="pinToggleBtn">Fixar conversa</button>
+            </div>
+          </div>
+
+          <div class="field">
             <label>Papel de parede desta conversa</label>
             <div class="whoRow">
               <button id="wallpaperBtn">Definir foto de fundo</button>
@@ -571,14 +598,14 @@
   // ---------- app state ----------
   var currentChat = null;
   var els = {};
-  ['screenHome','screenChat','screenContact','chatList','fabNew','newChatSheet','cancelNewChat',
+  ['screenHome','screenChat','screenContact','chatList','chatListItems','fabNew','newChatSheet','cancelNewChat',
    'homeMenuBtn','homeMenu','chatSearch','tabAll','tabUnread','tabUnreadCount','navUnreadBadge',
    'fContactName','fAvatar','fAvatarName','fWallpaper','fWallpaperName','fChatTxt','fChatTxtName',
    'mediaField','fMedia','fMediaName','whoField','whoRow','startChatBtn',
    'backBtn','unreadBadge','openContactBtn','chatAvatar','chatName','messagesContainer','scrollArea',
    'wallpaperBtn','wallpaperReset','wallpaperInput','msgInput','sendBtn','dirToggle',
    'lightbox','lightboxBody','lightboxClose',
-   'contactBackBtn','contactAvatarBig','contactNameBig','fChangeAvatar','exportTxtBtn','exportJsonBtn',
+   'contactBackBtn','contactAvatarBig','contactNameBig','fChangeAvatar','pinToggleBtn','exportTxtBtn','exportJsonBtn',
    'importBackupBtn','importBackupInput',
    'editOverlay','editTextarea','editSaveBtn','editDeleteBtn','editCancelBtn'
   ].forEach(function(id){ els[id] = document.getElementById(id); });
@@ -650,30 +677,52 @@
   var allChats = [];
   var activeTab = 'all';
 
+  var AVATAR_COLORS = ['#ee6c4d','#3a7ca5','#8a5a44','#5c8001','#7b2cbf','#c9184a','#2a9d8f','#e07a5f','#4a5759','#0a84ff'];
+  function initialsFor(name){
+    var parts = (name||'').trim().split(/\s+/).filter(Boolean);
+    if(!parts.length) return '?';
+    var s = parts[0][0] + (parts.length > 1 ? parts[1][0] : '');
+    return s.toUpperCase();
+  }
+  function colorForName(name){
+    var sum = 0;
+    for(var i=0;i<(name||'').length;i++) sum += name.charCodeAt(i);
+    return AVATAR_COLORS[sum % AVATAR_COLORS.length];
+  }
+  function avatarAttrs(name, avatarUrl){
+    if(avatarUrl) return {style:'background-image:url(' + avatarUrl + ')', inner:''};
+    return {style:'background:' + colorForName(name), inner:'<span class="monogram">' + escapeHtml(initialsFor(name)) + '</span>'};
+  }
+
   function renderChatList(chats){
-    els.chatList.innerHTML = '';
+    els.chatListItems.innerHTML = '';
     if(!chats.length){
-      els.chatList.innerHTML = '<div class="empty-hint">Nenhuma conversa ainda.<br>Toque em <b>+</b> pra criar uma a partir de um .txt exportado do WhatsApp, ou começar em branco.</div>';
+      els.chatListItems.innerHTML = '<div class="empty-hint">Nenhuma conversa ainda.<br>Toque em <b>+</b> pra criar uma a partir de um .txt exportado do WhatsApp, ou começar em branco.</div>';
       return;
     }
-    chats.sort(function(a,b){ return (b.updatedAt||0) - (a.updatedAt||0); });
+    chats.sort(function(a,b){
+      var pinDiff = (b.pinned?1:0) - (a.pinned?1:0);
+      if(pinDiff) return pinDiff;
+      return (b.updatedAt||0) - (a.updatedAt||0);
+    });
     chats.forEach(function(chat){
       var last = chat.messages[chat.messages.length-1];
-      var snippet = last ? (last.type==='text' ? last.text : ('[' + (last.type==='photo'?'foto':last.type==='video'?'vídeo':last.type==='audio'?'áudio':'figurinha') + ']')) : 'Nenhuma mensagem';
+      var snippetText = last ? (last.type==='text' ? (last.text||'') : ('[' + (last.type==='photo'?'foto':last.type==='video'?'vídeo':last.type==='audio'?'áudio':'figurinha') + ']')) : 'Nenhuma mensagem';
+      var sentCheck = (last && last.type==='text' && last.dir==='out') ? '<span class="sentcheck">✓✓</span>' : '';
+      var av = avatarAttrs(chat.name, chat.avatar);
       var row = document.createElement('div');
       row.className = 'chatrow';
       row.innerHTML =
-        '<div class="cavatar" style="' + (chat.avatar ? 'background-image:url(' + chat.avatar + ')' : '') + '">' +
-          (chat.avatar ? '' : '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>') +
-        '</div>' +
+        '<div class="cavatar" style="' + av.style + '">' + av.inner + '</div>' +
         '<div class="cinfo"><div class="cname">' + escapeHtml(chat.name || 'Sem nome') + '</div>' +
-        '<div class="csnippet">' + escapeHtml((snippet||'').split('\n')[0]) + '</div></div>' +
+        '<div class="csnippet">' + sentCheck + escapeHtml((snippetText||'').split('\n')[0]) + '</div></div>' +
         '<div class="cside">' +
+          (chat.pinned ? '<svg class="cpin" viewBox="0 0 24 24"><path d="M14 2l8 8-5 2-5 5-2-2-5 5-1-1 5-5-2-2 5-5z"/></svg>' : '') +
           (last && last.time ? '<div class="ctime">' + escapeHtml(last.time) + '</div>' : '') +
           (chat.unread ? '<div class="cbadge">' + chat.unread + '</div>' : '') +
         '</div>';
       row.addEventListener('click', function(){ openChat(chat); });
-      els.chatList.appendChild(row);
+      els.chatListItems.appendChild(row);
     });
   }
 
@@ -983,12 +1032,11 @@
   }
 
   function refreshAvatarUI(chat){
-    var img = chat.avatar ? 'url(' + chat.avatar + ')' : '';
-    var placeholder = '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>';
-    els.chatAvatar.style.backgroundImage = img;
-    els.chatAvatar.innerHTML = chat.avatar ? '' : placeholder;
-    els.contactAvatarBig.style.backgroundImage = img;
-    els.contactAvatarBig.innerHTML = chat.avatar ? '' : placeholder;
+    var av = avatarAttrs(chat.name, chat.avatar);
+    els.chatAvatar.setAttribute('style', av.style);
+    els.chatAvatar.innerHTML = av.inner;
+    els.contactAvatarBig.setAttribute('style', av.style);
+    els.contactAvatarBig.innerHTML = av.inner;
   }
 
   function openChat(chat){
@@ -1020,13 +1068,23 @@
 
   els.backBtn.addEventListener('click', function(){ showScreen('home'); loadChatList(); });
 
+  function updatePinToggle(){
+    els.pinToggleBtn.textContent = (currentChat && currentChat.pinned) ? 'Desafixar conversa' : 'Fixar conversa';
+  }
   els.openContactBtn.addEventListener('click', function(){
     if(!currentChat) return;
     els.contactNameBig.textContent = currentChat.name;
     refreshAvatarUI(currentChat);
+    updatePinToggle();
     showScreen('contact');
   });
   els.contactBackBtn.addEventListener('click', function(){ showScreen('chat'); });
+  els.pinToggleBtn.addEventListener('click', function(){
+    if(!currentChat) return;
+    currentChat.pinned = !currentChat.pinned;
+    updatePinToggle();
+    dbPut(currentChat);
+  });
   els.fChangeAvatar.addEventListener('change', function(e){
     var f = e.target.files[0]; if(!f || !currentChat) return;
     fileToDataURL(f).then(function(url){
