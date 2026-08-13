@@ -25,12 +25,16 @@
   html,body{
     margin:0;
     height:100%;
+    width:100%;
+    max-width:100vw;
+    overflow-x:hidden;
     background:var(--page-bg);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     overscroll-behavior:none;
   }
   .phone{
-    width:100%;
+    width:100vw;
+    max-width:100%;
     height:100dvh;
     background:#0b141a;
     display:flex;
@@ -44,13 +48,44 @@
   .screen.active{display:flex;}
 
   /* ---------- HOME ---------- */
-  #screenHome .homeHeader{
-    padding:calc(6px + env(safe-area-inset-top)) 16px 10px; display:flex; align-items:center; justify-content:space-between;
+  .homeTop{
+    position:relative;padding:calc(6px + env(safe-area-inset-top)) 10px 2px;
+    display:flex;align-items:center;gap:6px;flex-shrink:0;
   }
-  #screenHome .homeHeader h1{font-size:26px;font-weight:700;margin:0;}
-  #screenHome .homeHeader button{
-    background:none;border:0;color:#00a884;font-size:22px;cursor:pointer;
+  .iconbtn{background:none;border:0;color:#fff;cursor:pointer;padding:8px;line-height:1;}
+  .iconbtn svg{width:21px;height:21px;fill:none;stroke:#fff;stroke-width:1.7;display:block;}
+  .iconbtn.dots{font-size:19px;font-weight:700;letter-spacing:1px;}
+  .newChatTop{
+    width:34px;height:34px;border-radius:50%;background:#00a884;color:#04120e;
+    font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;
   }
+  .homeMenu{
+    position:absolute;top:44px;left:8px;background:#233138;border:1px solid rgba(255,255,255,.15);
+    border-radius:8px;padding:6px;display:none;flex-direction:column;z-index:12;min-width:210px;
+    box-shadow:0 4px 14px rgba(0,0,0,.4);
+  }
+  .homeMenu.show{display:flex;}
+  .homeMenu button{background:none;border:0;color:#e9edef;text-align:left;padding:9px 10px;font-size:13px;border-radius:6px;cursor:pointer;}
+  .homeMenu button:active{background:rgba(255,255,255,.1);}
+
+  .homeTitleRow{padding:4px 16px 12px;flex-shrink:0;}
+  .homeTitleRow h1{font-size:28px;font-weight:700;margin:0;}
+
+  .searchWrap{margin:0 16px 12px;position:relative;flex-shrink:0;}
+  .searchWrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;fill:none;stroke:var(--text-dim);stroke-width:2;}
+  .searchWrap input{
+    width:100%;background:#202c33;border:0;border-radius:10px;color:#fff;
+    padding:9px 12px 9px 34px;font-size:14.5px;
+  }
+  .searchWrap input::placeholder{color:var(--text-dim);}
+
+  .tabsRow{display:flex;gap:8px;padding:0 16px 12px;overflow-x:auto;flex-shrink:0;}
+  .tabsRow .tab{
+    background:#202c33;border:0;color:#d4dade;padding:7px 14px;border-radius:16px;
+    font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  }
+  .tabsRow .tab.active{background:#00a884;color:#04120e;}
+
   .chatlist{flex:1;overflow-y:auto;padding:0 8px;}
   .chatrow{
     display:flex;align-items:center;gap:12px;padding:10px 8px;
@@ -66,15 +101,13 @@
   .chatrow .cinfo{flex:1;min-width:0;}
   .chatrow .cname{font-size:16px;font-weight:600;}
   .chatrow .csnippet{font-size:13px;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chatrow .cside{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;}
   .chatrow .ctime{font-size:12px;color:var(--text-dim);}
-  .empty-hint{padding:40px 24px;text-align:center;color:var(--text-dim);font-size:14px;line-height:1.6;}
-
-  .fab-new{
-    position:absolute;right:18px;bottom:calc(22px + env(safe-area-inset-bottom));
-    width:52px;height:52px;border-radius:50%;background:#00a884;color:#fff;
-    display:flex;align-items:center;justify-content:center;font-size:26px;border:0;
-    box-shadow:0 4px 14px rgba(0,0,0,.4);cursor:pointer;
+  .chatrow .cbadge{
+    min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:#00a884;color:#04120e;
+    font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center;
   }
+  .empty-hint{padding:40px 24px;text-align:center;color:var(--text-dim);font-size:14px;line-height:1.6;}
 
   /* new chat sheet */
   .sheet{
@@ -231,16 +264,30 @@
 
       <!-- HOME -->
       <div id="screenHome" class="screen active">
-        <div class="homeHeader">
-          <h1>Conversas</h1>
-          <div class="icons">
-            <button class="textbtn" id="importBackupBtn" title="Importar backup (.json)">⇪</button>
-            <button class="textbtn" id="openNewChat" title="Nova conversa">✎</button>
+        <div class="homeTop">
+          <button class="iconbtn dots" id="homeMenuBtn" title="Mais opções">⋯</button>
+          <div style="flex:1"></div>
+          <button class="iconbtn" title="Câmera"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z"/><circle cx="12" cy="14" r="4"/></svg></button>
+          <button class="newChatTop" id="fabNew" title="Nova conversa">+</button>
+          <div class="homeMenu" id="homeMenu">
+            <button id="importBackupBtn">Importar backup (.json)</button>
           </div>
           <input id="importBackupInput" type="file" accept=".json,application/json" style="display:none">
         </div>
+
+        <div class="homeTitleRow"><h1>Conversas</h1></div>
+
+        <div class="searchWrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3" stroke-linecap="round"/></svg>
+          <input type="text" id="chatSearch" placeholder="Pesquisar">
+        </div>
+
+        <div class="tabsRow">
+          <button class="tab active" id="tabAll">Todas</button>
+          <button class="tab" id="tabUnread">Não lidas<span id="tabUnreadCount"></span></button>
+        </div>
+
         <div class="chatlist" id="chatList"></div>
-        <button class="fab-new" id="fabNew">＋</button>
 
         <div class="sheet" id="newChatSheet">
           <div class="sheetHeader">
@@ -475,7 +522,8 @@
   // ---------- app state ----------
   var currentChat = null;
   var els = {};
-  ['screenHome','screenChat','screenContact','chatList','fabNew','newChatSheet','openNewChat','cancelNewChat',
+  ['screenHome','screenChat','screenContact','chatList','fabNew','newChatSheet','cancelNewChat',
+   'homeMenuBtn','homeMenu','chatSearch','tabAll','tabUnread','tabUnreadCount',
    'fContactName','fAvatar','fAvatarName','fWallpaper','fWallpaperName','fChatTxt','fChatTxtName',
    'mediaField','fMedia','fMediaName','whoField','whoRow','startChatBtn',
    'backBtn','unreadBadge','openContactBtn','chatAvatar','chatName','messagesContainer','scrollArea',
@@ -524,7 +572,7 @@
   els.exportTxtBtn.addEventListener('click', function(){ if(currentChat) exportTxt(currentChat); });
   els.exportJsonBtn.addEventListener('click', function(){ if(currentChat) exportJson(currentChat); });
 
-  els.importBackupBtn.addEventListener('click', function(){ els.importBackupInput.click(); });
+  els.importBackupBtn.addEventListener('click', function(){ els.homeMenu.classList.remove('show'); els.importBackupInput.click(); });
   els.importBackupInput.addEventListener('change', function(e){
     var f = e.target.files[0]; if(!f) return;
     var reader = new FileReader();
@@ -550,6 +598,9 @@
   }
 
   // ---------- home / chat list ----------
+  var allChats = [];
+  var activeTab = 'all';
+
   function renderChatList(chats){
     els.chatList.innerHTML = '';
     if(!chats.length){
@@ -567,12 +618,53 @@
           (chat.avatar ? '' : '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v3h20v-3c0-3.3-6.7-5-10-5z"/></svg>') +
         '</div>' +
         '<div class="cinfo"><div class="cname">' + escapeHtml(chat.name || 'Sem nome') + '</div>' +
-        '<div class="csnippet">' + escapeHtml((snippet||'').split('\n')[0]) + '</div></div>';
+        '<div class="csnippet">' + escapeHtml((snippet||'').split('\n')[0]) + '</div></div>' +
+        '<div class="cside">' +
+          (last && last.time ? '<div class="ctime">' + escapeHtml(last.time) + '</div>' : '') +
+          (chat.unread ? '<div class="cbadge">' + chat.unread + '</div>' : '') +
+        '</div>';
       row.addEventListener('click', function(){ openChat(chat); });
       els.chatList.appendChild(row);
     });
   }
-  function loadChatList(){ dbGetAll().then(renderChatList); }
+
+  function applyFilterAndRender(){
+    var q = (els.chatSearch.value || '').toLowerCase().trim();
+    var list = allChats.filter(function(c){
+      if(activeTab === 'unread' && !(c.unread > 0)) return false;
+      if(q && (c.name || '').toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+    renderChatList(list);
+    var unreadChats = allChats.filter(function(c){ return c.unread > 0; }).length;
+    els.tabUnreadCount.textContent = unreadChats > 0 ? (' ' + unreadChats) : '';
+  }
+
+  function loadChatList(){
+    dbGetAll().then(function(chats){
+      allChats = chats;
+      applyFilterAndRender();
+    });
+  }
+
+  els.chatSearch.addEventListener('input', applyFilterAndRender);
+  els.tabAll.addEventListener('click', function(){
+    activeTab = 'all';
+    els.tabAll.classList.add('active');
+    els.tabUnread.classList.remove('active');
+    applyFilterAndRender();
+  });
+  els.tabUnread.addEventListener('click', function(){
+    activeTab = 'unread';
+    els.tabUnread.classList.add('active');
+    els.tabAll.classList.remove('active');
+    applyFilterAndRender();
+  });
+  els.homeMenuBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    els.homeMenu.classList.toggle('show');
+  });
+  document.addEventListener('click', function(){ els.homeMenu.classList.remove('show'); });
 
   // ---------- new chat sheet ----------
   var pendingAvatar = null, pendingWallpaper = null, pendingParsed = null, pendingMediaMap = {}, pendingWho = null;
@@ -588,7 +680,6 @@
     els.whoRow.innerHTML = '';
   }
   els.fabNew.addEventListener('click', function(){ resetSheet(); els.newChatSheet.classList.add('show'); });
-  els.openNewChat.addEventListener('click', function(){ resetSheet(); els.newChatSheet.classList.add('show'); });
   els.cancelNewChat.addEventListener('click', function(){ els.newChatSheet.classList.remove('show'); });
 
   els.fAvatar.addEventListener('change', function(){
